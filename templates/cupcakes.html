@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cupcakes</title>
+    <style>
+      .cupcake-img {
+        max-width: 200px;
+        max-height: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Cupcakes are delicious!</h1>
+    <ul id="cupcakes"></ul>
+
+    <h2>Add a cupcake</h2>
+    <form class="newcupcake" action="" method="POST">
+      <div>
+        <label for="flavor">Flavor</label>
+        <input type="text" id="flavor" name="flavor" />
+      </div>
+      <div>
+        <label for="size">Size</label>
+        <input type="text" id="size" name="size" />
+      </div>
+      <div>
+        <label for="rating">Rating</label>
+        <input
+          type="number"
+          id="rating"
+          name="rating"
+          step="0.01"
+          min="1"
+          max="10"
+        />
+      </div>
+      <div>
+        <label for="image">Image URL</label>
+        <input type="text" id="image" name="image" />
+      </div>
+      <button>Add</button>
+    </form>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.2/axios.min.js"
+      integrity="sha256-T/f7Sju1ZfNNfBh7skWn0idlCBcI3RwdLSS4/I7NQKQ="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://code.jquery.com/jquery-3.4.1.min.js"
+      integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      const BASE_URL = "http://localhost:5000/api/cupcakes";
+
+      function createCupcakeMarkup(cupcake) {
+        return `
+      <li data-id="${cupcake.id}">
+        <div>
+        ${cupcake.flavor},  ${cupcake.size},  ${cupcake.rating}
+        <button class="delete-cupcake">X</button></div>
+        <img class="cupcake-img"
+            src="${cupcake.image}"
+            alt="(no image provided)">
+      </li>`;
+      }
+      async function showCupcakes() {
+        const res = await axios.get(BASE_URL);
+        //console.log(res.data.cupcakes);
+        for (let cupcake of res.data.cupcakes) {
+          let newCupcake = $(createCupcakeMarkup(cupcake));
+          $("#cupcakes").append(newCupcake);
+        }
+      }
+
+      $(".newcupcake").on("submit", createCupcake);
+      async function createCupcake(e) {
+        e.preventDefault();
+        let flavor = $("#flavor").val();
+        let size = $("#size").val();
+        let rating = $("#rating").val();
+        let image = $("#image").val();
+        const res = await axios.post(BASE_URL, { flavor, size, rating, image });
+        let newCupcake = $(createCupcakeMarkup(res.data.cupcake));
+        $("#cupcakes").append(newCupcake);
+        $("#newcupcake").trigger("reset");
+      }
+
+      async function deleteCupcake(e) {
+        e.preventDefault();
+        let $cupcake = $(e.target).closest("li");
+        let id = $cupcake.attr("data-id");
+        console.log("ID", id);
+        await axios.delete(`${BASE_URL}/${id}`);
+        $cupcake.remove();
+      }
+
+      $("#cupcakes").on("click", ".delete-cupcake", deleteCupcake);
+      $(showCupcakes);
+    </script>
+  </body>
+</html>
