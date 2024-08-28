@@ -70,7 +70,7 @@
           <button>Add</button>
         </form>
       </div>
-      <div>
+      <div id="update-cupcake">
         <img
           id="display-cupcake"
           src="https://plus.unsplash.com/premium_photo-1663839412124-3697b75810ca?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
@@ -101,6 +101,35 @@
             src="${cupcake.image}"
             alt="(no image provided)">
       </li>`;
+      }
+      function createFormMarkup(cupcake) {
+        return `<h2>Update cupcake</h2><form class="updatecupcake">
+          <div>
+            <label for="flavor-update">Flavor</label>
+            <input type="text" id="flavor-update" name="flavor" value=${cupcake.flavor} />
+          </div>
+          <div>
+            <label for="size-update">Size</label>
+            <input type="text" id="size-update" name="size" value=${cupcake.size} />
+          </div>
+           <div>
+            <label for="rating-update">Rating</label>
+            <input
+              type="number"
+              id="rating-update"
+              name="rating"
+              step="0.01"
+              min="1"
+              max="10"
+              value=${cupcake.rating}
+            />
+          </div>
+          <div>
+            <label for="image-update">Image URL</label>
+            <input type="text" id="image-update" name="image" value=${cupcake.image}/>
+          </div>
+          <button id="btn-update">Update </button>
+          </form>`;
       }
       async function showCupcakes() {
         const res = await axios.get(BASE_URL);
@@ -142,12 +171,54 @@
         e.preventDefault();
         let $cupcake = $(e.target).closest("li");
         let id = $cupcake.attr("data-id");
+        console.log("Show ID", id);
         const res = await axios.get(`${BASE_URL}/${id}`);
         $("#display-cupcake").attr("src", res.data.cupcake.image);
+        $("#update-cupcake").attr("data-id", id);
       }
-
+      async function updateForm(e) {
+        e.preventDefault();
+        let id = $("#update-cupcake").attr("data-id");
+        const res = await axios.get(`${BASE_URL}/${id}`);
+        $("#update-cupcake img").hide();
+        let updateForm = $(createFormMarkup(res.data.cupcake));
+        $("#update-cupcake").append(updateForm);
+        $(".updatecupcake").on("submit", updateCupcake);
+      }
+      async function updateCupcake(e) {
+        e.preventDefault();
+        console.log("Finally updated");
+        let flavor = $("#flavor-update").val();
+        console.log("flavor", flavor);
+        let size = $("#size-update").val();
+        let rating = $("#rating-update").val();
+        let image = $("#image-update").val();
+        if (image === "")
+          image =
+            "https://plus.unsplash.com/premium_photo-1663839412124-3697b75810ca?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
+        let id = $("#update-cupcake").attr("data-id");
+        console.log("ID", id);
+        const res = await axios.patch(
+          `${BASE_URL}/${id}`,
+          {
+            flavor: flavor,
+            size: size,
+            rating: rating,
+            image: image,
+          },
+          { headers: { "Content-Type": "application/json" } }
+        );
+        console.log("data", res.data);
+        $("#cupcakes").empty();
+        $(showCupcakes);
+        $(".updatecupcake").hide();
+        $("#update-cupcake h2").hide();
+        $("#update-cupcake img").show();
+        $("#update-cupcake").removeAttr("data-id");
+      }
       $("#cupcakes").on("click", ".delete-cupcake", deleteCupcake);
       $("#cupcakes").on("click", "img", showCupcake);
+      $("#display-cupcake").on("click", updateForm);
       $(showCupcakes);
     </script>
   </body>

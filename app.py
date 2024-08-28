@@ -40,6 +40,7 @@ def create_cupcake():
 @app.route("/api/cupcakes/<int:id>", methods=['PATCH'])
 def update_cupcake(id):
     """Update a single cupcake based on id."""
+    print("First attempt")
     cupcake_to_update = Cupcake.query.get_or_404(id)
     data = request.json
     #one way
