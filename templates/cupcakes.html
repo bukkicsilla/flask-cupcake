@@ -128,7 +128,7 @@
             <label for="image-update">Image URL</label>
             <input type="text" id="image-update" name="image" value=${cupcake.image}/>
           </div>
-          <button id="btn-update">Update </button>
+          <button id="btn-update" data-id="${cupcake.id}">Update </button>
           </form>`;
       }
       async function showCupcakes() {
@@ -181,6 +181,7 @@
         let id = $("#update-cupcake").attr("data-id");
         const res = await axios.get(`${BASE_URL}/${id}`);
         $("#update-cupcake img").hide();
+        $("#update-cupcake").removeAttr("data-id");
         let updateForm = $(createFormMarkup(res.data.cupcake));
         $("#update-cupcake").append(updateForm);
         $(".updatecupcake").on("submit", updateCupcake);
@@ -189,15 +190,15 @@
         e.preventDefault();
         console.log("Finally updated");
         let flavor = $("#flavor-update").val();
-        console.log("flavor", flavor);
+        //console.log("flavor", flavor);
         let size = $("#size-update").val();
         let rating = $("#rating-update").val();
         let image = $("#image-update").val();
         if (image === "")
           image =
             "https://plus.unsplash.com/premium_photo-1663839412124-3697b75810ca?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
-        let id = $("#update-cupcake").attr("data-id");
-        console.log("ID", id);
+        let id = $("#btn-update").attr("data-id");
+        console.log("Button ID", id);
         const res = await axios.patch(
           `${BASE_URL}/${id}`,
           {
@@ -211,10 +212,13 @@
         console.log("data", res.data);
         $("#cupcakes").empty();
         $(showCupcakes);
-        $(".updatecupcake").hide();
-        $("#update-cupcake h2").hide();
+        //$("#update-cupcake").empty();
+        //$(".updatecupcake").hide();
+        //$("#update-cupcake h2").hide();
+        $(".updatecupcake").remove();
+        $("#update-cupcake h2").remove();
         $("#update-cupcake img").show();
-        $("#update-cupcake").removeAttr("data-id");
+        //$("#update-cupcake").removeAttr("data-id");
       }
       $("#cupcakes").on("click", ".delete-cupcake", deleteCupcake);
       $("#cupcakes").on("click", "img", showCupcake);
